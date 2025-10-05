@@ -1,111 +1,61 @@
-# Face Recognition System
+# Face Recognition & Attendance System
 
-A production-ready face recognition and attendance tracking system built with InsightFace and FastAPI.
+Production-ready face recognition and attendance tracking built with FastAPI and InsightFace. The platform delivers real-time identification, automatic attendance logging, and rich analytics in a modular, extensible codebase.
 
-## 🚀 Features
+## 📚 Project Overview
 
-### **Core Features**
-- **Real-time Face Recognition**: Live webcam processing with 85-95% accuracy
-- **Automatic Attendance Tracking**: CSV logging with duplicate prevention
-- **Multi-photo Enrollment**: Guided enrollment for optimal accuracy
-- **Clean Web Interface**: Professional UI with live video feed
-- **RESTful API**: Complete API for system integration
+- **Real-time recognition** powered by InsightFace ArcFace with guided multi-angle enrollment for 85–95% accuracy.
+- **Automated attendance**: deduplicated CSV logging, on-demand exports, and live dashboards.
+- **Modular design**: FastAPI app routers in `src/app/`, recognition logic in `src/face_system.py`, and detection/quality/FAISS components in `src/models/`.
+- **Integrated UI** at `/ui` featuring webcam feed, analytics modal, report export, and file-upload workflows.
+- **Extensibility**: optional FAISS acceleration, analytics pipeline (`src/analytics.py`), Docker support, and plans for DB/Redis integrations.
 
-### **Enhanced Features** ⭐
-- **📊 Advanced Analytics Dashboard**: Comprehensive attendance insights
-- **🔍 FAISS High-Performance Search**: 10x faster similarity search for large databases
-- **📈 Trend Analysis**: Attendance patterns and confidence metrics
-- **📄 Report Export**: JSON/CSV export with detailed statistics
-- **🐳 Docker Support**: One-command containerized deployment
-- **🎯 System Health Monitoring**: Real-time performance metrics
+## 📊 Feature Highlights
 
-## ⚡ Quick Start
+- **Core**: live webcam recognition, multi-image enrollment, REST API, responsive UI, duplicate-safe attendance logging.
+- **Enhanced**: analytics dashboards, trend reports, FAISS similarity search, system health metrics, Docker deployment.
+- **Observability**: exportable JSON/CSV reports, confidence analysis, and `/system/health` diagnostics.
 
-### Prerequisites
-- Python 3.11+
-- Poetry
-- Webcam
-
-### Basic Installation
-```bash
-# Install core dependencies
-poetry install
-
-# Start the system
-poetry run python scripts/run_system.py
-```
-
-### Enhanced Installation ⭐
-```bash
-# Install enhanced features (analytics, FAISS, Docker)
-poetry run python scripts/install_enhanced.py
-
-# Or use Docker
-docker-compose up --build
-```
-
-### Access the System
-- **Web UI**: http://127.0.0.1:8000/ui
-- **API Docs**: http://127.0.0.1:8000/docs
-
-## 🎯 Usage
-
-### Enrollment
-1. Enter name in enrollment field
-2. Click "Guided Enroll (15 Photos - Best Accuracy)"
-3. Follow pose instructions for optimal results
-
-### Recognition
-1. Click "Start Recognition"
-2. Green boxes = recognized faces
-3. Attendance automatically logged
-
-## 📁 Clean Project Structure
+## 🧱 Repository Layout
 
 ```
 student-surveillance/
 ├── src/
-│   ├── api.py                 # Main FastAPI application
-│   ├── face_system.py         # Core recognition system
-│   ├── core/config.py         # Configuration
-│   ├── models/                # Modular components
-│   │   ├── detection.py       # Face detection
-│   │   ├── recognition.py     # Face recognition  
-│   │   └── quality_filter.py  # Quality assessment
-│   └── tests/                 # Test suite (19 tests)
+│   ├── app/                 # FastAPI app factory, routers, schemas, utils
+│   ├── face_system.py       # Enrollment, recognition, attendance engine
+│   ├── analytics.py         # Attendance analytics & reporting
+│   ├── core/config.py       # Pydantic settings & filesystem bootstrap
+│   ├── models/              # Detection, recognition, quality, FAISS modules
+│   └── tests/               # Pytest suites (detection/quality/recognition)
 ├── data/
-│   ├── models/                # AI model files
-│   └── processed/             # Data storage
-│       ├── attendance.csv     # Attendance records
-│       └── face_embeddings.json # Face database
+│   ├── models/              # InsightFace model cache (ignored in Git)
+│   └── processed/           # Attendance CSV, embeddings JSON, reports
 ├── scripts/
-│   └── run_system.py          # Main entry point
-└── pyproject.toml             # Dependencies
+│   ├── run_system.py        # Uvicorn launcher with port checks
+│   └── install_enhanced.py  # Installs analytics & FAISS extras
+├── Dockerfile & docker-compose.yml
+└── pyproject.toml / poetry.lock
 ```
 
-## 🔧 API Endpoints
+## ⚙️ API Surface
 
-### **Core Endpoints**
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/` | GET | System status |
-| `/ui` | GET | Web interface |
-| `/enroll` | POST | Enroll person |
-| `/recognize` | POST | Recognize faces |
-| `/attendance` | GET | Attendance stats |
-| `/delete/{name}` | DELETE | Remove person |
+| `/` | GET | System heartbeat and enrollment count |
+| `/ui` | GET | Built-in web interface |
+| `/enroll` | POST | Enroll faces (multi-image aware) |
+| `/recognize` | POST | Recognize faces & log attendance |
+| `/attendance` | GET | Aggregate attendance metrics |
+| `/delete/{name}` | DELETE | Remove an enrollee |
+| `/analytics/dashboard` | GET | 30-day analytics report |
+| `/analytics/trends` | GET | Trend slope calculations |
+| `/analytics/export` | GET | Export analytics to file |
+| `/system/health` | GET | Health metrics & recent activity |
 
-### **Enhanced Endpoints** ⭐
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/analytics/dashboard` | GET | Analytics dashboard data |
-| `/analytics/trends` | GET | Attendance trends |
-| `/analytics/export` | GET | Export reports |
-| `/system/health` | GET | System health metrics |
+## 🧰 Configuration
 
-## ⚙️ Configuration
+Adjust thresholds and storage paths in `.env` (copy from `.env.example`):
 
-Edit `.env`:
 ```env
 SIMILARITY_THRESHOLD=0.65
 MIN_FACE_SIZE=60
@@ -118,29 +68,71 @@ BLUR_THRESHOLD=100.0
 PYTHONPATH=. poetry run pytest src/tests/ -v
 ```
 
-## 🏗️ Technology Stack
+## 🛠️ Setup & Installation
 
-- **Backend**: FastAPI, Python 3.11
-- **AI**: InsightFace ArcFace, OpenCV
-- **Frontend**: HTML5, JavaScript
-- **Storage**: JSON, CSV
-- **Testing**: pytest (47% coverage)
+- **Prerequisites**
+  - Python 3.11+
+  - Poetry 1.8+
+  - Webcam for live recognition
+  - InsightFace `buffalo_l` model pack placed under `data/models/models/`
 
-## 📈 Performance
+- **Clone + install dependencies**
 
-- **Accuracy**: 85-95% recognition rate
-- **Speed**: Real-time processing (1 FPS)
-- **Scalability**: Handles 100+ enrolled faces
-- **Reliability**: Automatic error recovery
+  ```bash
+  git clone https://github.com/preethamwork29/student-surveillance.git
+  cd student-surveillance
+  poetry install
+  ```
 
-## 🎯 Next Steps
+- **Bootstrap environment**
 
-This clean foundation supports:
-- Database integration (PostgreSQL)
-- FAISS for large-scale similarity search
-- Docker containerization
-- Multi-camera support
-- Advanced analytics
+  ```bash
+  cp .env.example .env
+  # edit .env to change thresholds, storage locations, or service URLs
+  ```
+
+- **Install enhanced tooling (optional)**
+
+  ```bash
+  poetry run python scripts/install_enhanced.py
+  ```
+
+## 🚀 Running the Project
+
+- **Local development server**
+
+  ```bash
+  poetry run uvicorn src.app.main:app --host 0.0.0.0 --port 8000 --reload
+  ```
+
+- **Scripted launcher**
+
+  ```bash
+  poetry run python scripts/run_system.py
+  ```
+
+- **Docker orchestration**
+
+  ```bash
+  docker-compose up --build
+  ```
+
+- **Access points**
+  - Web UI: http://127.0.0.1:8000/ui
+  - API Docs (Swagger): http://127.0.0.1:8000/docs
+
+## 🎯 Usage Tips
+
+- **Enrollment**: provide a subject name, use guided 15-shot capture for high-quality embeddings, and ensure consistent lighting.
+- **Recognition**: start live recognition from the UI or POST images to `/recognize`; attendance entries deduplicate per day.
+- **Analytics**: after installing pandas/plotly/FAISS, explore dashboards via the UI modal or call `/analytics/*` endpoints directly.
+
+## 🛣️ Roadmap & Extensions
+
+- Database integrations (PostgreSQL) and ORM migrations
+- Redis/RabbitMQ for caching and messaging
+- Multi-camera ingestion and load balancing
+- Expanded API/analytics test coverage and CI automation
 
 ## 📄 License
 
