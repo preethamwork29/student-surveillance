@@ -10,10 +10,12 @@ def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     app = FastAPI(title="Face Recognition API", version="2.0.0")
 
-    app.include_router(status.router)
-    app.include_router(enrollment.router)
-    app.include_router(recognition.router)
-    app.include_router(analytics.router)
+    api_prefix = "/api"
+
+    app.include_router(status.router, prefix=api_prefix)
+    app.include_router(enrollment.router, prefix=api_prefix)
+    app.include_router(recognition.router, prefix=api_prefix)
+    app.include_router(analytics.router, prefix=api_prefix)
     app.include_router(ui.router)
 
     return app

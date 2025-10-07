@@ -7,8 +7,7 @@ from fastapi.responses import HTMLResponse
 router = APIRouter(tags=["ui"])
 
 
-@router.get("/ui", response_class=HTMLResponse)
-def get_ui() -> str:
+def _render_ui() -> str:
     """Return the built-in web interface for the face recognition system."""
     return """
     <!DOCTYPE html>
@@ -89,6 +88,7 @@ def get_ui() -> str:
             </div>
         </div>
         <script>
+            const API_BASE = '/api';
             let video, canvas, ctx;
             let recognitionInterval;
             async function initWebcam() {
@@ -104,7 +104,7 @@ def get_ui() -> str:
             }
             async function getStatus() {
                 try {
-                    const response = await fetch('/status');
+                    const response = await fetch(`${API_BASE}/status`);
                     const data = await response.json();
                     document.getElementById('status').innerHTML = `
                         <div class="success">
@@ -120,7 +120,7 @@ def get_ui() -> str:
             }
             async function getAttendance() {
                 try {
-                    const response = await fetch('/attendance');
+                    const response = await fetch(`${API_BASE}/attendance`);
                     const data = await response.json();
                     document.getElementById('attendance').innerHTML = `
                         <div class="info">
@@ -152,7 +152,7 @@ def get_ui() -> str:
                 formData.append('name', name);
                 formData.append('files', blob, 'webcam.jpg');
                 try {
-                    const response = await fetch('/enroll', { method: 'POST', body: formData });
+                    const response = await fetch(`${API_BASE}/enroll`, { method: 'POST', body: formData });
                     const data = await response.json();
                     if (response.ok) {
                         document.getElementById('webcamResult').innerHTML = `<div class="success">${data.message}</div>`;
@@ -216,7 +216,7 @@ def get_ui() -> str:
                     }
                     guidanceText.innerHTML = '🔄 Processing your enrollment...';
                     guidanceText.className = 'guidance info';
-                    const response = await fetch('/enroll', { method: 'POST', body: formData });
+                    const response = await fetch(`${API_BASE}/enroll`, { method: 'POST', body: formData });
                     const data = await response.json();
                     if (response.ok) {
                         guidanceText.innerHTML = '✅ Enrollment Complete!';
@@ -247,7 +247,7 @@ def get_ui() -> str:
                     const formData = new FormData();
                     formData.append('file', blob, 'webcam.jpg');
                     try {
-                        const response = await fetch('/recognize?threshold=0.5', {
+                        const response = await fetch(`${API_BASE}/recognize?threshold=0.5`, {
                             method: 'POST',
                             body: formData,
                         });
@@ -306,7 +306,7 @@ def get_ui() -> str:
                     formData.append('files', file);
                 }
                 try {
-                    const response = await fetch('/enroll', { method: 'POST', body: formData });
+                    const response = await fetch(`${API_BASE}/enroll`, { method: 'POST', body: formData });
                     const data = await response.json();
                     if (response.ok) {
                         let message = data.message;
@@ -331,7 +331,7 @@ def get_ui() -> str:
                 const formData = new FormData();
                 formData.append('file', fileInput.files[0]);
                 try {
-                    const response = await fetch('/recognize?threshold=0.5', {
+                    const response = await fetch(`${API_BASE}/recognize?threshold=0.5`, {
                         method: 'POST',
                         body: formData,
                     });
@@ -352,7 +352,7 @@ def get_ui() -> str:
                 document.getElementById('analyticsModal').style.display = 'block';
                 document.getElementById('analyticsContent').innerHTML = 'Loading analytics...';
                 try {
-                    const response = await fetch('/analytics/dashboard');
+                    const response = await fetch(`${API_BASE}/analytics/dashboard`);
                     const data = await response.json();
                     if (data.error) {
                         document.getElementById('analyticsContent').innerHTML = `<div class="error">${data.error}</div>`;
@@ -405,7 +405,7 @@ def get_ui() -> str:
             }
             async function exportReport() {
                 try {
-                    const response = await fetch('/analytics/export?format=json');
+                    const response = await fetch(`${API_BASE}/analytics/export?format=json`);
                     const data = await response.json();
                     if (data.error) {
                         alert('Export failed: ' + data.error);
@@ -421,3 +421,15 @@ def get_ui() -> str:
     </body>
     </html>
     """
+
+
+@router.get("/", response_class=HTMLResponse)
+def get_root_ui() -> str:
+    """Serve the UI at the application root."""
+    return _render_ui()
+
+
+@router.get("/ui", response_class=HTMLResponse)
+def get_legacy_ui() -> str:
+    """Retain legacy /ui path for backwards compatibility."""
+    return _render_ui()
