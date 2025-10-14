@@ -1,6 +1,8 @@
 """Status and attendance endpoints."""
 from __future__ import annotations
 
+import csv
+
 from fastapi import APIRouter, Depends
 
 from src.app.dependencies import get_face_system
@@ -50,3 +52,34 @@ def get_today_attendance(face_system: FaceRecognitionSystem = Depends(get_face_s
         "attendees": today_attendance,
         "count": len(today_attendance),
     }
+
+
+@router.get("/attendance/records")
+def get_attendance_records(face_system: FaceRecognitionSystem = Depends(get_face_system)) -> dict[str, object]:
+    """Return raw attendance records from the CSV ledger."""
+    file_path = face_system.attendance_file
+    records: list[dict[str, object]] = []
+
+    if file_path.exists():
+        with open(file_path, "r", newline="", encoding="utf-8") as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                confidence_value: float | None = None
+                confidence_raw = row.get("Confidence")
+                if confidence_raw:
+                    try:
+                        confidence_value = float(confidence_raw)
+                    except ValueError:
+                        confidence_value = None
+
+                records.append(
+                    {
+                        "date": row.get("Date", ""),
+                        "time": row.get("Time", ""),
+                        "name": row.get("Name", ""),
+                        "confidence": confidence_value,
+                        "status": row.get("Status", ""),
+                    }
+                )
+
+    return {"records": records}

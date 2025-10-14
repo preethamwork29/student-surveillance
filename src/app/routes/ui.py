@@ -372,6 +372,110 @@ def _render_ui() -> str:
                 font-weight: 700;
                 color: var(--accent);
             }
+            .table-controls {
+                display: grid;
+                gap: 12px;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+            .table-controls .control {
+                display: flex;
+                flex-direction: column;
+            }
+            .table-controls label {
+                display: block;
+                font-size: 11px;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: var(--text-secondary);
+                margin-bottom: 6px;
+            }
+            .table-controls select {
+                padding: 12px 16px;
+                border-radius: var(--radius-md);
+                border: 1px solid rgba(148, 163, 184, 0.2);
+                background: rgba(15, 23, 42, 0.55);
+                color: var(--text-primary);
+                font-size: 14px;
+            }
+            .table-summary {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 16px;
+                align-items: center;
+                color: var(--text-secondary);
+                font-size: 14px;
+            }
+            .table-container {
+                overflow: auto;
+                border-radius: var(--radius-md);
+                border: 1px solid rgba(148, 163, 184, 0.16);
+                background: rgba(15, 23, 42, 0.55);
+            }
+            .data-table {
+                width: 100%;
+                border-collapse: collapse;
+                min-width: 600px;
+            }
+            .data-table th,
+            .data-table td {
+                padding: 14px 16px;
+                text-align: left;
+                border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+            }
+            .data-table th {
+                font-size: 13px;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                color: rgba(226, 232, 240, 0.82);
+                cursor: pointer;
+                background: rgba(15, 23, 42, 0.72);
+                position: sticky;
+                top: 0;
+                z-index: 1;
+            }
+            .data-table td {
+                font-size: 14px;
+                color: var(--text-secondary);
+                white-space: nowrap;
+            }
+            .data-table tbody tr:hover {
+                background: rgba(56, 189, 248, 0.08);
+            }
+            .sort-indicator {
+                margin-left: 6px;
+                font-size: 10px;
+                opacity: 0.7;
+            }
+            .table-empty {
+                text-align: center;
+                padding: 24px !important;
+                color: var(--text-secondary);
+                font-style: italic;
+            }
+            .status-pill {
+                display: inline-flex;
+                align-items: center;
+                padding: 4px 10px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.04em;
+            }
+            .status-present {
+                background: rgba(52, 211, 153, 0.18);
+                color: #34d399;
+                border: 1px solid rgba(52, 211, 153, 0.32);
+            }
+            .status-absent {
+                background: rgba(248, 113, 113, 0.18);
+                color: #f87171;
+                border: 1px solid rgba(248, 113, 113, 0.32);
+            }
+            .status-generic {
+                background: rgba(148, 163, 184, 0.18);
+                color: rgba(226, 232, 240, 0.9);
+                border: 1px solid rgba(148, 163, 184, 0.32);
+            }
             @media (max-width: 768px) {
                 .hero-card {
                     padding: 32px;
@@ -476,6 +580,60 @@ def _render_ui() -> str:
                     <button class="secondary" onclick="recognizeFromFile()">Recognize from File</button>
                 </div>
                 <div id="uploadResult" class="info-block"></div>
+            </div>
+            <div class="section attendance-section">
+                <div class="section-header">
+                    <div>
+                        <h3>Attendance Ledger</h3>
+                        <p>Review attendance history with spreadsheet-inspired controls.</p>
+                    </div>
+                    <div class="actions">
+                        <button class="secondary" onclick="fetchAttendanceRecords()">Refresh Records</button>
+                    </div>
+                </div>
+                <div class="table-controls">
+                    <div class="control">
+                        <label for="attendanceSearch">Search</label>
+                        <input type="text" id="attendanceSearch" placeholder="Search names, status, dates">
+                    </div>
+                    <div class="control">
+                        <label for="attendanceStatus">Status</label>
+                        <select id="attendanceStatus">
+                            <option value="all">All statuses</option>
+                            <option value="Present">Present</option>
+                            <option value="Absent">Absent</option>
+                        </select>
+                    </div>
+                    <div class="control">
+                        <label for="attendanceDateFrom">From Date</label>
+                        <input type="date" id="attendanceDateFrom">
+                    </div>
+                    <div class="control">
+                        <label for="attendanceDateTo">To Date</label>
+                        <input type="date" id="attendanceDateTo">
+                    </div>
+                </div>
+                <div class="table-summary" id="attendanceSummary">
+                    <span><strong>0</strong> records showing</span>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th onclick="sortAttendance('date')">Date<span class="sort-indicator" id="sortIndicator-date"></span></th>
+                                <th onclick="sortAttendance('time')">Time<span class="sort-indicator" id="sortIndicator-time"></span></th>
+                                <th onclick="sortAttendance('name')">Name<span class="sort-indicator" id="sortIndicator-name"></span></th>
+                                <th onclick="sortAttendance('confidence')">Confidence<span class="sort-indicator" id="sortIndicator-confidence"></span></th>
+                                <th onclick="sortAttendance('status')">Status<span class="sort-indicator" id="sortIndicator-status"></span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody">
+                            <tr>
+                                <td colspan="5" class="table-empty">No attendance records logged yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div id="analyticsModal" class="modal" style="display: none;">
                 <div class="modal-content">
@@ -834,7 +992,179 @@ def _render_ui() -> str:
                     alert('Export failed: ' + error.message);
                 }
             }
+            let attendanceState = {
+                raw: [],
+                filtered: [],
+                sortKey: 'date',
+                sortDir: 'desc'
+            };
+            function formatConfidence(value) {
+                if (typeof value !== 'number' || Number.isNaN(value)) {
+                    return '—';
+                }
+                return `${(value * 100).toFixed(1)}%`;
+            }
+            function getStatusPill(status) {
+                if (!status) {
+                    return '<span class="status-pill status-generic">Unknown</span>';
+                }
+                const normalized = status.toLowerCase();
+                if (normalized === 'present') {
+                    return '<span class="status-pill status-present">Present</span>';
+                }
+                if (normalized === 'absent') {
+                    return '<span class="status-pill status-absent">Absent</span>';
+                }
+                const safeStatus = status.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `<span class="status-pill status-generic">${safeStatus}</span>`;
+            }
+            function applyAttendanceFilters() {
+                const searchTerm = document.getElementById('attendanceSearch').value.trim().toLowerCase();
+                const statusFilter = document.getElementById('attendanceStatus').value;
+                const dateFrom = document.getElementById('attendanceDateFrom').value;
+                const dateTo = document.getElementById('attendanceDateTo').value;
+
+                attendanceState.filtered = attendanceState.raw.filter(record => {
+                    const matchesSearch = !searchTerm ||
+                        record.name.toLowerCase().includes(searchTerm) ||
+                        record.status.toLowerCase().includes(searchTerm) ||
+                        record.date.includes(searchTerm) ||
+                        record.time.includes(searchTerm);
+
+                    const matchesStatus = statusFilter === 'all' || record.status === statusFilter;
+
+                    const matchesDateFrom = !dateFrom || record.date >= dateFrom;
+                    const matchesDateTo = !dateTo || record.date <= dateTo;
+
+                    return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
+                });
+
+                sortAttendance(attendanceState.sortKey, true);
+                updateAttendanceSummary();
+            }
+            function sortAttendance(key, preserveDirection = false) {
+                if (!preserveDirection) {
+                    if (attendanceState.sortKey === key) {
+                        attendanceState.sortDir = attendanceState.sortDir === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        attendanceState.sortKey = key;
+                        attendanceState.sortDir = 'asc';
+                    }
+                }
+
+                const direction = attendanceState.sortDir === 'asc' ? 1 : -1;
+                const keyAccessor = (record) => {
+                    if (key === 'confidence') {
+                        return typeof record[key] === 'number' ? record[key] : -1;
+                    }
+                    return record[key];
+                };
+
+                attendanceState.filtered.sort((a, b) => {
+                    const valueA = keyAccessor(a);
+                    const valueB = keyAccessor(b);
+
+                    if (valueA === valueB) {
+                        return 0;
+                    }
+                    return valueA > valueB ? direction : -direction;
+                });
+
+                updateSortIndicators();
+                renderAttendanceTable();
+            }
+            function renderAttendanceTable() {
+                const tbody = document.getElementById('attendanceTableBody');
+                if (!attendanceState.filtered.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="table-empty">No records match the current filters.</td></tr>';
+                    return;
+                }
+
+                const rowsHtml = attendanceState.filtered.map(record => `
+                    <tr>
+                        <td>${record.date}</td>
+                        <td>${record.time}</td>
+                        <td>${record.name}</td>
+                        <td>${formatConfidence(record.confidence)}</td>
+                        <td>${getStatusPill(record.status)}</td>
+                    </tr>
+                `).join('');
+
+                tbody.innerHTML = rowsHtml;
+            }
+            function updateAttendanceSummary() {
+                const summary = document.getElementById('attendanceSummary');
+                const total = attendanceState.filtered.length;
+                const statusCounts = attendanceState.filtered.reduce((acc, record) => {
+                    const key = record.status || 'Unknown';
+                    acc[key] = (acc[key] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const statusHtml = Object.entries(statusCounts)
+                    .map(([status, count]) => `<span>${status}: <strong>${count}</strong></span>`)
+                    .join(' · ');
+
+                summary.innerHTML = `
+                    <span><strong>${total}</strong> records showing</span>
+                    ${statusHtml ? `<span>${statusHtml}</span>` : ''}
+                `;
+            }
+            function updateSortIndicators() {
+                const indicators = document.querySelectorAll('.sort-indicator');
+                indicators.forEach(indicator => {
+                    indicator.textContent = '';
+                });
+                const activeIndicator = document.getElementById(`sortIndicator-${attendanceState.sortKey}`);
+                if (activeIndicator) {
+                    activeIndicator.textContent = attendanceState.sortDir === 'asc' ? '▲' : '▼';
+                }
+            }
+            async function fetchAttendanceRecords() {
+                try {
+                    const response = await fetch(`${API_BASE}/attendance/records`);
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.detail || 'Failed to load records');
+                    }
+                    attendanceState.raw = Array.isArray(data.records) ? data.records.map(record => ({
+                        date: record.date || '',
+                        time: record.time || '',
+                        name: record.name || '',
+                        confidence: typeof record.confidence === 'number' ? record.confidence : null,
+                        status: record.status || 'Present'
+                    })) : [];
+
+                    attendanceState.filtered = [...attendanceState.raw];
+                    attendanceState.sortKey = 'date';
+                    attendanceState.sortDir = 'desc';
+
+                    applyAttendanceFilters();
+                } catch (error) {
+                    const tbody = document.getElementById('attendanceTableBody');
+                    tbody.innerHTML = `<tr><td colspan="5" class="table-empty">Failed to load attendance records: ${error.message}</td></tr>`;
+                }
+            }
+            function initAttendanceControls() {
+                const searchInput = document.getElementById('attendanceSearch');
+                const statusSelect = document.getElementById('attendanceStatus');
+                const dateFromInput = document.getElementById('attendanceDateFrom');
+                const dateToInput = document.getElementById('attendanceDateTo');
+
+                [searchInput, statusSelect, dateFromInput, dateToInput].forEach(control => {
+                    if (!control) return;
+                    control.addEventListener('input', () => {
+                        applyAttendanceFilters();
+                    });
+                    control.addEventListener('change', () => {
+                        applyAttendanceFilters();
+                    });
+                });
+
+                fetchAttendanceRecords();
+            }
             window.onload = initWebcam;
+            window.addEventListener('load', initAttendanceControls);
         </script>
     </body>
     </html>
