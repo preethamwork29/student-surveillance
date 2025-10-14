@@ -15,69 +15,467 @@ def _render_ui() -> str:
     <head>
         <title>Face Recognition System</title>
         <style>
-            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
-            .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
-            .section { margin: 30px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
-            input, button { padding: 10px; margin: 5px; font-size: 14px; }
-            button { background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-            button:hover { background: #0056b3; }
-            .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
-            .success { background: #d4edda; color: #155724; }
-            .error { background: #f8d7da; color: #721c24; }
-            .warning { background: #fff3cd; color: #856404; }
-            .info { background: #d1ecf1; color: #0c5460; }
-            video, canvas { border: 2px solid #333; border-radius: 8px; margin: 10px; }
-            .webcam-section { text-align: center; }
-            .guidance { font-size: 18px; font-weight: bold; padding: 15px; margin: 10px 0; border-radius: 8px; }
-            .progress-bar { width: 100%; height: 20px; background: #e9ecef; border-radius: 10px; margin: 10px 0; }
-            .progress-fill { height: 100%; background: #007bff; border-radius: 10px; transition: width 0.3s; }
-            .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-            .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 1000px; border-radius: 10px; max-height: 80vh; overflow-y: auto; }
-            .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-            .close:hover { color: black; }
-            .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
-            .analytics-card { background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; }
-            .metric { font-size: 24px; font-weight: bold; color: #007bff; }
+            :root {
+                --bg: #050b18;
+                --glass: rgba(15, 23, 42, 0.78);
+                --glass-soft: rgba(15, 23, 42, 0.55);
+                --border: rgba(100, 116, 139, 0.28);
+                --accent: #38bdf8;
+                --accent-strong: #22d3ee;
+                --accent-contrast: #020617;
+                --text-primary: #e2e8f0;
+                --text-secondary: #94a3b8;
+                --success: #34d399;
+                --warning: #facc15;
+                --error: #f87171;
+                --radius-lg: 22px;
+                --radius-md: 16px;
+                --shadow-soft: 0 20px 60px rgba(2, 6, 23, 0.55);
+            }
+            *, *::before, *::after {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                min-height: 100vh;
+                background: radial-gradient(circle at 18% 20%, rgba(59, 130, 246, 0.26), transparent 58%),
+                            radial-gradient(circle at 82% 8%, rgba(14, 165, 233, 0.22), transparent 55%),
+                            var(--bg);
+                font-family: "Inter", "Segoe UI", sans-serif;
+                color: var(--text-primary);
+            }
+            h1 {
+                font-size: clamp(32px, 4vw, 48px);
+                font-weight: 700;
+                margin: 0 0 8px;
+            }
+            h3 {
+                font-size: 22px;
+                font-weight: 600;
+                margin: 0;
+            }
+            p {
+                margin: 0;
+                color: var(--text-secondary);
+            }
+            .container {
+                width: min(1180px, 92%);
+                margin: 0 auto;
+                padding: 80px 0 120px;
+                display: flex;
+                flex-direction: column;
+                gap: 36px;
+            }
+            .hero-card {
+                background: linear-gradient(140deg, rgba(15, 23, 42, 0.88), rgba(8, 47, 73, 0.78));
+                border-radius: var(--radius-lg);
+                padding: 42px;
+                border: 1px solid rgba(148, 163, 184, 0.16);
+                box-shadow: var(--shadow-soft);
+                display: flex;
+                flex-wrap: wrap;
+                gap: 28px;
+                justify-content: space-between;
+                backdrop-filter: blur(20px);
+            }
+            .hero-copy {
+                max-width: 520px;
+            }
+            .hero-copy p {
+                font-size: 16px;
+                line-height: 1.6;
+            }
+            .tag-group {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-top: 12px;
+            }
+            .tag {
+                padding: 6px 14px;
+                border-radius: 999px;
+                font-size: 12px;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                background: rgba(148, 163, 184, 0.14);
+                color: var(--text-secondary);
+            }
+            .tag.live {
+                color: #fca5a5;
+                background: rgba(248, 113, 113, 0.12);
+                border: 1px solid rgba(248, 113, 113, 0.32);
+                position: relative;
+                padding-left: 28px;
+            }
+            .tag.live::before {
+                content: "";
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: #f87171;
+                box-shadow: 0 0 0 6px rgba(248, 113, 113, 0.22);
+            }
+            .metrics-strip {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 16px;
+                min-width: 260px;
+            }
+            .metric-card {
+                background: rgba(15, 23, 42, 0.6);
+                border-radius: var(--radius-md);
+                padding: 18px;
+                border: 1px solid rgba(148, 163, 184, 0.12);
+                text-align: left;
+            }
+            .metric-card span {
+                display: block;
+            }
+            .metric-label {
+                text-transform: uppercase;
+                font-size: 12px;
+                letter-spacing: 0.08em;
+                color: rgba(148, 163, 184, 0.8);
+            }
+            .metric-value {
+                margin-top: 8px;
+                font-size: 26px;
+                font-weight: 700;
+                color: var(--accent);
+            }
+            .section {
+                background: var(--glass);
+                border-radius: var(--radius-lg);
+                padding: 30px;
+                border: 1px solid var(--border);
+                box-shadow: var(--shadow-soft);
+                backdrop-filter: blur(18px);
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+            }
+            .section-header {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                align-items: center;
+                gap: 16px;
+            }
+            .section-header h3 {
+                margin-bottom: 6px;
+            }
+            .actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                justify-content: flex-end;
+            }
+            .info-block {
+                background: rgba(148, 163, 184, 0.08);
+                border-radius: var(--radius-md);
+                padding: 18px;
+                border: 1px solid rgba(148, 163, 184, 0.16);
+                min-height: 84px;
+                color: var(--text-secondary);
+            }
+            button {
+                appearance: none;
+                border: none;
+                padding: 11px 20px;
+                border-radius: 999px;
+                font-weight: 600;
+                font-size: 14px;
+                cursor: pointer;
+                transition: transform 0.18s ease, box-shadow 0.18s ease;
+                background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+                color: var(--accent-contrast);
+                box-shadow: 0 14px 30px rgba(34, 211, 238, 0.25);
+            }
+            button:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 18px 36px rgba(34, 211, 238, 0.32);
+            }
+            button:active {
+                transform: translateY(0);
+                box-shadow: 0 12px 24px rgba(34, 211, 238, 0.24);
+            }
+            button.secondary {
+                background: rgba(148, 163, 184, 0.16);
+                color: var(--text-primary);
+                box-shadow: none;
+            }
+            button.secondary:hover {
+                box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.35);
+            }
+            input {
+                padding: 12px 16px;
+                border-radius: var(--radius-md);
+                border: 1px solid rgba(148, 163, 184, 0.2);
+                background: rgba(15, 23, 42, 0.55);
+                color: var(--text-primary);
+                font-size: 14px;
+                width: 100%;
+                transition: border 0.2s ease, box-shadow 0.2s ease;
+            }
+            input[type="file"] {
+                padding: 12px;
+            }
+            input:focus {
+                outline: none;
+                border-color: rgba(34, 211, 238, 0.65);
+                box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18);
+            }
+            .webcam-section {
+                align-items: center;
+                text-align: center;
+            }
+            .video-wall {
+                display: grid;
+                gap: 18px;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                width: 100%;
+            }
+            .video-frame {
+                position: relative;
+                background: #000;
+                border-radius: 20px;
+                padding: 14px;
+                border: 1px solid rgba(148, 163, 184, 0.2);
+                box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.08);
+            }
+            .video-frame::after {
+                content: "";
+                position: absolute;
+                inset: 8px;
+                border-radius: 14px;
+                border: 1px solid rgba(56, 189, 248, 0.12);
+                pointer-events: none;
+            }
+            video, canvas {
+                width: 100%;
+                aspect-ratio: 16 / 9;
+                border-radius: 14px;
+                background: #000;
+                border: none;
+                display: block;
+            }
+            #canvas {
+                box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.22);
+            }
+            .control-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                justify-content: center;
+            }
+            .guidance {
+                font-size: 18px;
+                font-weight: 600;
+                padding: 16px 20px;
+                border-radius: var(--radius-md);
+                margin: 0;
+                background: rgba(148, 163, 184, 0.12);
+                color: var(--text-primary);
+            }
+            .guidance.success { color: var(--success); }
+            .guidance.warning { color: var(--warning); }
+            .guidance.error { color: var(--error); }
+            .progress-bar {
+                width: 100%;
+                height: 16px;
+                background: rgba(15, 23, 42, 0.65);
+                border-radius: 999px;
+                overflow: hidden;
+                border: 1px solid rgba(148, 163, 184, 0.18);
+            }
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(135deg, var(--accent) 0%, #6366f1 100%);
+                border-radius: inherit;
+                transition: width 0.35s ease;
+            }
+            .result {
+                margin: 0;
+                padding: 16px 18px;
+                border-radius: var(--radius-md);
+                background: rgba(15, 23, 42, 0.6);
+                border: 1px solid rgba(148, 163, 184, 0.2);
+                color: var(--text-secondary);
+            }
+            .success {
+                background: rgba(52, 211, 153, 0.12);
+                color: var(--success);
+                border-color: rgba(52, 211, 153, 0.32);
+            }
+            .error {
+                background: rgba(248, 113, 113, 0.12);
+                color: var(--error);
+                border-color: rgba(248, 113, 113, 0.32);
+            }
+            .warning {
+                background: rgba(250, 204, 21, 0.12);
+                color: var(--warning);
+                border-color: rgba(250, 204, 21, 0.28);
+            }
+            .info {
+                background: rgba(56, 189, 248, 0.12);
+                color: var(--accent);
+                border-color: rgba(56, 189, 248, 0.28);
+            }
+            .modal {
+                position: fixed;
+                z-index: 1000;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(2, 6, 23, 0.72);
+                backdrop-filter: blur(12px);
+            }
+            .modal-content {
+                width: min(960px, 92%);
+                max-height: 80vh;
+                overflow-y: auto;
+                background: var(--glass);
+                border-radius: var(--radius-lg);
+                border: 1px solid var(--border);
+                padding: 28px;
+                box-shadow: var(--shadow-soft);
+            }
+            .close {
+                font-size: 28px;
+                color: var(--text-secondary);
+                float: right;
+                cursor: pointer;
+            }
+            .close:hover {
+                color: var(--text-primary);
+            }
+            .analytics-grid {
+                display: grid;
+                gap: 20px;
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                margin: 24px 0;
+            }
+            .analytics-card {
+                background: rgba(15, 23, 42, 0.62);
+                border-radius: var(--radius-md);
+                padding: 20px;
+                border: 1px solid rgba(148, 163, 184, 0.16);
+            }
+            .analytics-card .metric {
+                font-size: 28px;
+                font-weight: 700;
+                color: var(--accent);
+            }
+            @media (max-width: 768px) {
+                .hero-card {
+                    padding: 32px;
+                }
+                .section {
+                    padding: 24px;
+                }
+                .control-row {
+                    justify-content: stretch;
+                }
+                .control-row button {
+                    flex: 1 1 45%;
+                }
+            }
         </style>
     </head>
     <body>
         <div class="container">
-            <h1>Face Recognition System v2.0</h1>
+            <div class="hero-card">
+                <div class="hero-copy">
+                    <div class="tag live">Live</div>
+                    <h1>Face Recognition System v2.0</h1>
+                    <p>Monitor real-time attendance, enroll students effortlessly, and gain insight from detailed analytics&mdash;all within a cinematic control room interface.</p>
+                    <div class="tag-group">
+                        <span class="tag">High Fidelity Stream</span>
+                        <span class="tag">Guided Enrollment</span>
+                        <span class="tag">FAISS Acceleration</span>
+                    </div>
+                </div>
+                <div class="metrics-strip">
+                    <div class="metric-card">
+                        <span class="metric-label">Enrolled Faces</span>
+                        <span class="metric-value" id="metricEnrolled">--</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Today&rsquo;s Attendance</span>
+                        <span class="metric-value" id="metricToday">--</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Last Recognition</span>
+                        <span class="metric-value" id="metricLast">--</span>
+                    </div>
+                </div>
+            </div>
             <div class="section">
-                <h3>System Status</h3>
-                <button onclick="getStatus()">Refresh Status</button>
-                <button onclick="getAttendance()">View Today's Attendance</button>
-                <button onclick="showAnalytics()">📊 Analytics Dashboard</button>
-                <button onclick="exportReport()">📄 Export Report</button>
-                <div id="status"></div>
-                <div id="attendance"></div>
+                <div class="section-header">
+                    <div>
+                        <h3>System Status Console</h3>
+                        <p>Live system metrics, attendance summaries, and export utilities.</p>
+                    </div>
+                    <div class="actions">
+                        <button class="secondary" onclick="getStatus()">Refresh Status</button>
+                        <button class="secondary" onclick="getAttendance()">View Today&rsquo;s Attendance</button>
+                        <button onclick="showAnalytics()">📊 Analytics Dashboard</button>
+                        <button onclick="exportReport()">📄 Export Report</button>
+                    </div>
+                </div>
+                <div class="info-block" id="status"></div>
+                <div class="info-block" id="attendance"></div>
             </div>
             <div class="section webcam-section">
-                <h3>Live Webcam Recognition</h3>
-                <video id="video" width="400" height="300" autoplay muted></video>
-                <canvas id="canvas" width="400" height="300"></canvas>
-                <br>
-                <input type="text" id="enrollName" placeholder="Enter name to enroll">
-                <button onclick="enrollFromWebcam()">Quick Enroll (1 Photo)</button>
-                <button onclick="enrollGuidedFromWebcam()">Guided Enroll (15 Photos - Best Accuracy)</button>
-                <button onclick="startRecognition()">Start Recognition</button>
-                <button onclick="stopRecognition()">Stop Recognition</button>
+                <div class="section-header">
+                    <div>
+                        <h3>Live Recognition Feed</h3>
+                        <p>Monitor camera feed, enroll new faces, and track recognition overlays.</p>
+                    </div>
+                </div>
+                <div class="video-wall">
+                    <div class="video-frame">
+                        <video id="video" width="400" height="300" autoplay muted></video>
+                    </div>
+                    <div class="video-frame">
+                        <canvas id="canvas" width="400" height="300"></canvas>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <input type="text" id="enrollName" placeholder="Enter name to enroll">
+                    <button onclick="enrollFromWebcam()">Quick Enroll (1 Photo)</button>
+                    <button onclick="enrollGuidedFromWebcam()">Guided Enroll (15 Photos - Best Accuracy)</button>
+                    <button onclick="startRecognition()">Start Recognition</button>
+                    <button class="secondary" onclick="stopRecognition()">Stop Recognition</button>
+                </div>
                 <div id="enrollmentProgress" style="display: none;">
                     <div class="progress-bar">
                         <div id="progressFill" class="progress-fill" style="width: 0%;"></div>
                     </div>
-                    <div id="guidanceText" class="guidance info">Get ready...</div>
+                    <p id="guidanceText" class="guidance info">Get ready...</p>
                 </div>
                 <div id="webcamResult"></div>
             </div>
             <div class="section">
-                <h3>Upload Images</h3>
-                <input type="file" id="imageFile" accept="image/*" multiple>
-                <input type="text" id="uploadName" placeholder="Name (for enrollment)">
-                <br>
-                <button onclick="enrollFromFile()">Enroll from Files</button>
-                <button onclick="recognizeFromFile()">Recognize from File</button>
-                <div id="uploadResult"></div>
+                <div class="section-header">
+                    <div>
+                        <h3>Upload & Offline Recognition</h3>
+                        <p>Process stored images for enrollment or recognition results.</p>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <input type="file" id="imageFile" accept="image/*" multiple>
+                    <input type="text" id="uploadName" placeholder="Name (for enrollment)">
+                    <button onclick="enrollFromFile()">Enroll from Files</button>
+                    <button class="secondary" onclick="recognizeFromFile()">Recognize from File</button>
+                </div>
+                <div id="uploadResult" class="info-block"></div>
             </div>
             <div id="analyticsModal" class="modal" style="display: none;">
                 <div class="modal-content">
@@ -102,6 +500,21 @@ def _render_ui() -> str:
                     document.getElementById('webcamResult').innerHTML = '<div class="error">Camera access denied</div>';
                 }
             }
+            function updateHeroMetrics(data) {
+                const enrolled = document.getElementById('metricEnrolled');
+                const today = document.getElementById('metricToday');
+                const last = document.getElementById('metricLast');
+                if (enrolled) {
+                    enrolled.textContent = data.enrolled_count ?? '--';
+                }
+                if (today) {
+                    today.textContent = data.attendance?.today_attendance ?? '--';
+                }
+                if (last) {
+                    const recentName = data.attendance?.today_names?.slice(-1)[0];
+                    last.textContent = recentName ? recentName : 'Idle';
+                }
+            }
             async function getStatus() {
                 try {
                     const response = await fetch(`${API_BASE}/status`);
@@ -114,6 +527,7 @@ def _render_ui() -> str:
                             <strong>Today's Attendance:</strong> ${data.attendance.today_attendance} people
                         </div>
                     `;
+                    updateHeroMetrics(data);
                 } catch (err) {
                     document.getElementById('status').innerHTML = '<div class="error">Failed to get status</div>';
                 }
@@ -131,6 +545,10 @@ def _render_ui() -> str:
                             <strong>Total Records:</strong> ${data.total_attendance_records}
                         </div>
                     `;
+                    updateHeroMetrics({
+                        enrolled_count: document.getElementById('metricEnrolled')?.textContent,
+                        attendance: data
+                    });
                 } catch (err) {
                     document.getElementById('attendance').innerHTML = '<div class="error">Failed to get attendance</div>';
                 }
